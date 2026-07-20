@@ -11,6 +11,18 @@ const YandexSDK = {
             if (window.YaGames && typeof window.YaGames.init === 'function') {
                 this.ysdk = await window.YaGames.init();
                 console.log('Yandex Games SDK initialized');
+                
+                // Set language from SDK
+                if (this.ysdk.environment && this.ysdk.environment.i18n) {
+                    window.userLang = this.ysdk.environment.i18n.lang;
+                    console.log('Language set to:', window.userLang);
+                }
+                
+                // Signal game is ready
+                if (this.ysdk.features && this.ysdk.features.LoadingAPI) {
+                    this.ysdk.features.LoadingAPI.ready();
+                    console.log('Game Ready signaled');
+                }
                 return true;
             } else {
                 console.log('Yandex Games SDK not available (local development)');
@@ -108,5 +120,18 @@ const YandexSDK = {
     },
     stopAutoSave() {
         if (this.autoSave) clearInterval(this.autoSave);
+    },
+
+    // Pause game on visibility change (Yandex requirement 1.3)
+    initVisibilityHandler(pauseCallback, resumeCallback) {
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                console.log('Game paused (tab hidden)');
+                if (pauseCallback) pauseCallback();
+            } else {
+                console.log('Game resumed (tab visible)');
+                if (resumeCallback) resumeCallback();
+            }
+        });
     }
 };

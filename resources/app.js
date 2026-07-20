@@ -4,7 +4,13 @@
 // Copyright (c) 2025 Alexander Bazhanov https://github.com/bazhanius
 // ------------------------------------------------------------------------
 
-let userLang = navigator.language.indexOf('ru') !== -1 ? 'ru' : 'en';
+// Language detection: use Yandex SDK if available, fallback to browser
+let userLang = 'en';
+if (window.YaGames) {
+    // Will be set after SDK init
+} else {
+    userLang = navigator.language.indexOf('ru') !== -1 ? 'ru' : 'en';
+}
 
     const l10n = {
     "match3Game": {
@@ -54,6 +60,12 @@ window.onload = function () {
 
     // Initialize Yandex Games SDK (non-blocking)
     YandexSDK.init();
+
+    // Handle visibility change (pause on tab switch)
+    YandexSDK.initVisibilityHandler(
+        () => { if (typeof isPaused !== 'undefined') isPaused = true; },
+        () => { if (typeof isPaused !== 'undefined') isPaused = false; }
+    );
 
     // Start auto-save every 30 seconds
     YandexSDK.startAutoSave(() => ({

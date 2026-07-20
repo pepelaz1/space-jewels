@@ -16,12 +16,18 @@
 
     <link rel="stylesheet" href="resources/style.css">
 
-    <!-- Yandex Games SDK: uncomment for production, comment for local dev -->
-    <!-- <script src="/sdk.js"></script> -->
+    <!-- Yandex Games SDK -->
+    <script src="/sdk.js"></script>
     <script type='text/javascript' src='resources/yandex-sdk.js'></script>
     <script type='text/javascript' src='resources/app.js'></script>
 </head>
 <body>
+<script>
+// Prevent context menu on right-click (Yandex Games requirement 1.6.1.8)
+document.addEventListener('contextmenu', e => e.preventDefault());
+// Prevent text selection
+document.addEventListener('selectstart', e => e.preventDefault());
+</script>
 
 <div class="stars"></div>
 <div class="stars-deep"></div>
