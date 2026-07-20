@@ -1,6 +1,6 @@
 {
-  "name": "match-3-game",
-  "short_name": "match-3",
+  "name": "cosmic-gems",
+  "short_name": "cosmic-gems",
   "icons": [
     {
       "src": "/resources/favicons/android-chrome-192x192.png",
@@ -13,7 +13,7 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#0a0020",
+  "background_color": "#0a0020",
   "display": "standalone"
 }

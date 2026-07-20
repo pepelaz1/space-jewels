@@ -6,10 +6,10 @@
 
 let userLang = navigator.language.indexOf('ru') !== -1 ? 'ru' : 'en';
 
-const l10n = {
+    const l10n = {
     "match3Game": {
-        "ru": "ТРИ В РЯД!",
-        "en": "Match 3 Game"
+        "ru": "КОСМИЧЕСКИЕ ДРАГОЦЕННОСТИ",
+        "en": "COSMIC GEMS"
     },
     "newGame": {
         "ru": "Новая игра",
@@ -52,6 +52,18 @@ const l10n = {
 // The function gets called when the window is fully loaded
 window.onload = function () {
 
+    // Initialize Yandex Games SDK (non-blocking)
+    YandexSDK.init();
+
+    // Start auto-save every 30 seconds
+    YandexSDK.startAutoSave(() => ({
+        bestScore: parseInt(localStorage.getItem('Match3GameBestScore') || 0),
+        gamesPlayed: parseInt(localStorage.getItem('gamesPlayed') || 0),
+        totalScore: parseInt(localStorage.getItem('totalScore') || 0),
+        maxCombo: parseInt(localStorage.getItem('maxCombo') || 0),
+        timestamp: Date.now()
+    }));
+
     let newGameButton = document.getElementById('new-game-button');
     let autoPlayButton = document.getElementById("auto-play-button");
     let changeLangButton = document.getElementById("change-lang-button");
@@ -81,6 +93,7 @@ window.onload = function () {
 
     let statistics = document.querySelector('.statistics');
     let timerFiller = document.querySelector('.timer_filler');
+    let rewardedButton = document.getElementById('rewarded-button');
 
     // Get the canvas and context
     let canvas = document.getElementById("viewport");
@@ -109,16 +122,15 @@ window.onload = function () {
 
     // All the different tile colors in RGB
     let tileColors = [
-        {color: "#FF4E40", radii: [0, 36, 36, 36]},
-        {color: "#BF61D6", radii: [36, 0, 36, 36]},
-        {color: "#139DF5", radii: [36, 36, 0, 36]},
-        {color: "#4ECC2C", radii: [36, 36, 36, 0]},
-        {color: "#FED204", radii: [36, 0, 36, 0]},
-        {color: "#FDA811", radii: [36, 36, 36, 36]},
-        //{color: "#AEADAB", radii: [18, 18, 18, 18]}
+        {color: "#FF2D55", radii: [0, 36, 36, 36]},   // Ruby
+        {color: "#AF52DE", radii: [36, 0, 36, 36]},   // Amethyst
+        {color: "#5AC8FA", radii: [36, 36, 0, 36]},   // Sapphire
+        {color: "#34C759", radii: [36, 36, 36, 0]},   // Emerald
+        {color: "#FFD60A", radii: [36, 0, 36, 0]},    // Topaz
+        {color: "#FF9500", radii: [36, 36, 36, 36]},  // Amber
     ];
-    let bgColor = {color: "rgb(245, 245, 247)", radii: [0, 0, 0, 0]}
-    let selectColor = {color: "rgb(0, 119, 237)", radii: [0, 0, 0, 0]}
+    let bgColor = {color: "rgb(15, 10, 40)", radii: [0, 0, 0, 0]}
+    let selectColor = {color: "rgb(255, 215, 0)", radii: [0, 0, 0, 0]}
     let jokerTile = {
         value: 777,
         exists: false,
@@ -258,15 +270,15 @@ window.onload = function () {
     }
 
     let explosionColors = [
-        "#6A0000",
-        "#900000",
-        "#902B2B",
-        "#A63232",
-        "#A62626",
-        "#FD5039",
-        "#C12F2A",
-        "#FF6540",
-        "#f93801"
+        "#FF2D55",
+        "#AF52DE",
+        "#5AC8FA",
+        "#34C759",
+        "#FFD60A",
+        "#FF9500",
+        "#FFD700",
+        "#FF6B9D",
+        "#C8AAFF"
     ];
 
     function getExplosionColor(mainColor) {
@@ -432,10 +444,21 @@ window.onload = function () {
 
                     if (clusters.length > 0) {
                         // Add points to the score
+                        let clusterScore = 0;
                         for (let i = 0; i < clusters.length; i++) {
                             // Add extra points for longer clusters
-                            score.previous = score.current;
-                            score.current = score.current + clusters[i].length * clusters[i].length;
+                            clusterScore += clusters[i].length * clusters[i].length;
+                        }
+                        score.previous = score.current;
+                        score.current = score.current + clusterScore;
+
+                        // Track combo (multiple clusters at once = combo)
+                        if (clusters.length > 1) {
+                            let combo = clusters.length;
+                            let maxCombo = parseInt(localStorage.getItem('maxCombo') || 0);
+                            if (combo > maxCombo) {
+                                localStorage.setItem('maxCombo', combo);
+                            }
                         }
 
                         // Clusters found, remove them
@@ -1171,11 +1194,23 @@ window.onload = function () {
         // Reset game
         finishGame('');
 
+        // Hide rewarded button
+        rewardedButton.style.display = 'none';
+
         // Remove pulse effect to New game button
         newGameButton.classList.remove('pulse');
         newGameButton.querySelector('svg').innerHTML = '<path d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"/>';
         // Get best score
-        bestScoreSpan.innerHTML = localStorage.getItem('Match3GameBestScore') || '—';
+        let bestScore = localStorage.getItem('Match3GameBestScore') || '—';
+        bestScoreSpan.innerHTML = bestScore;
+
+        // Load from Yandex in background
+        YandexSDK.loadData().then(data => {
+            if (data?.bestScore) {
+                localStorage.setItem('Match3GameBestScore', data.bestScore);
+                bestScoreSpan.innerHTML = data.bestScore;
+            }
+        });
 
         // Start timer
         startTimer();
@@ -1212,8 +1247,29 @@ window.onload = function () {
 
         // Save score if new record
         let bestScore = localStorage.getItem('Match3GameBestScore') || 0;
+        let gamesPlayed = parseInt(localStorage.getItem('gamesPlayed') || 0) + 1;
+        let totalScore = parseInt(localStorage.getItem('totalScore') || 0) + score.current;
+        let maxCombo = parseInt(localStorage.getItem('maxCombo') || 0);
+
         if (score.current > bestScore) {
             localStorage.setItem('Match3GameBestScore', score.current);
+        }
+        localStorage.setItem('gamesPlayed', gamesPlayed);
+        localStorage.setItem('totalScore', totalScore);
+
+        // Save to Yandex
+        YandexSDK.saveData({
+            bestScore: Math.max(score.current, bestScore),
+            gamesPlayed: gamesPlayed,
+            totalScore: totalScore,
+            maxCombo: maxCombo,
+            lastScore: score.current,
+            timestamp: Date.now()
+        });
+
+        // Show interstitial ad on game over (not on first game)
+        if (parseInt(localStorage.getItem('gamesPlayed') || 0) > 1) {
+            YandexSDK.showInterstitial();
         }
 
         // Reset boosters button and counters
@@ -1245,13 +1301,16 @@ window.onload = function () {
         if (reason === 'timeOut') {
             gameFieldOverlay.style.display = 'flex';
             gameFieldOverlay.classList.add('overlay-times-up');
+            rewardedButton.style.display = 'flex';
         } else if (reason === 'noMoveLeft') {
             gameFieldOverlay.style.display = 'flex';
             gameFieldOverlay.classList.add('overlay-no-moves');
+            rewardedButton.style.display = 'none';
         } else {
             gameFieldOverlay.style.display = 'none';
             gameFieldOverlay.classList.remove('overlay-times-up');
             gameFieldOverlay.classList.remove('overlay-no-moves');
+            rewardedButton.style.display = 'none';
         }
 
     }
@@ -1694,28 +1753,27 @@ window.onload = function () {
     }
 
     const completionPercentageColor = [
-        [100, 'rgb(255,0,0)', '#ff0000'],
-        [96, 'rgb(255,0,0)', '#ff0000'],
-        [91, 'rgb(255,42,0)', '#ff0000'],
-        [86, 'rgb(255,91,0)', '#ff0000'],
-        [81, 'rgb(255,144,0)', '#ff0000'],
-        [76, 'rgb(255,198,0)', '#1677ff'],
-        [71, 'rgb(255,255,0)', '#1677ff'],
-        [66, 'rgb(198,255,0)', '#1677ff'],
-        [61, 'rgb(144,255,0)', '#1677ff'],
-        [56, 'rgb(91,255,0)', '#1677ff'],
-        [51, 'rgb(42,255,0)', '#1677ff'],
-        [46, 'rgb(0,255,0)', '#1677ff'],
-        [41, 'rgb(0,255,42)', '#1677ff'],
-        [36, 'rgb(0,255,91)', '#1677ff'],
-        [31, 'rgb(0,255,144)', '#1677ff'],
-        [26, 'rgb(0,255,198)', '#1677ff'],
-        [21, 'rgb(0,255,255)', '#1677ff'],
-        [16, 'rgb(0,198,255)', '#1677ff'],
-        [11, 'rgb(0,144,255)', '#1677ff'],
-        [5, 'rgb(0,91,255)', '#1677ff'],
-        [1, 'rgb(0,42,255)', '#1677ff'],
-        //[0, 'rgba(0,0,0,.25)', 'rgba(0,0,0,.25)'],
+        [100, 'rgb(255,45,85)', '#FF2D55'],
+        [96, 'rgb(255,45,85)', '#FF2D55'],
+        [91, 'rgb(255,80,60)', '#FF2D55'],
+        [86, 'rgb(255,120,40)', '#FF2D55'],
+        [81, 'rgb(255,160,30)', '#FF2D55'],
+        [76, 'rgb(255,200,20)', '#FFD700'],
+        [71, 'rgb(255,215,0)', '#FFD700'],
+        [66, 'rgb(230,215,20)', '#FFD700'],
+        [61, 'rgb(200,215,40)', '#FFD700'],
+        [56, 'rgb(170,215,60)', '#FFD700'],
+        [51, 'rgb(140,215,80)', '#FFD700'],
+        [46, 'rgb(100,215,120)', '#FFD700'],
+        [41, 'rgb(80,215,150)', '#FFD700'],
+        [36, 'rgb(60,215,180)', '#FFD700'],
+        [31, 'rgb(90,200,250)', '#FFD700'],
+        [26, 'rgb(100,180,250)', '#FFD700'],
+        [21, 'rgb(120,160,250)', '#FFD700'],
+        [16, 'rgb(140,140,250)', '#FFD700'],
+        [11, 'rgb(160,120,250)', '#FFD700'],
+        [5, 'rgb(175,82,222)', '#FFD700'],
+        [1, 'rgb(175,82,222)', '#FFD700'],
     ];
 
     const getCompletionPercentageColor = (percent) => {
@@ -1825,6 +1883,22 @@ window.onload = function () {
         aiBot = false;
         updateAiBot();
         newGame();
+    });
+
+    // Rewarded video button - get +30 seconds
+    rewardedButton.addEventListener('click', async () => {
+        await YandexSDK.showRewarded(() => {
+            // Give extra 30 seconds
+            timer.current += 30;
+            updateTimer();
+            // Hide overlay
+            gameFieldOverlay.style.display = 'none';
+            gameFieldOverlay.classList.remove('overlay-times-up');
+            gameFieldOverlay.classList.remove('overlay-no-moves');
+            // Resume game
+            gameOver.status = false;
+            startTimer();
+        });
     });
 
     function showOneMove(type = null) {
