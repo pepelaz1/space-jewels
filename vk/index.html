@@ -16,8 +16,18 @@
 
     <link rel="stylesheet" href="resources/style.css">
 
-    <!-- VK Bridge SDK -->
-    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+    <!-- VK Bridge SDK (only loads inside VK) -->
+    <script>
+    // Only load VK Bridge if inside VK environment
+    if (window.location.search.includes('vk_platform') || (window.parent && window.parent !== window)) {
+        var s = document.createElement('script');
+        s.src = 'https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js';
+        s.onerror = function() { console.log('VK Bridge failed to load'); };
+        document.head.appendChild(s);
+    } else {
+        console.log('Running outside VK (local development)');
+    }
+    </script>
     <script type='text/javascript' src='vk-sdk.js'></script>
     <script type='text/javascript' src='resources/app.js'></script>
 </head>
