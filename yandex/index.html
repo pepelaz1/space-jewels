@@ -6,47 +6,20 @@
     <title>КОСМИЧЕСКИЕ ДРАГОЦЕННОСТИ</title>
 
     <!-- Favicon List -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/resources/favicons/apple-touch-icon.png">
-    <link rel="icon" type="image/x-icon" href="/resources/favicons/favicon.ico"/>
-    <link rel="icon" type="image/png" sizes="32x32" href="/resources/favicons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/resources/favicons/favicon-16x16.png">
-    <link rel="icon" href="/resources/favicons/favicon.svg">
-    <link rel="mask-icon" href="/resources/favicons/favicon.svg" color="#000000">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" sizes="180x180" href="resources/favicons/apple-touch-icon.png">
+    <link rel="icon" type="image/x-icon" href="resources/favicons/favicon.ico"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="resources/favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="resources/favicons/favicon-16x16.png">
+    <link rel="icon" href="resources/favicons/favicon.svg">
+    <link rel="mask-icon" href="resources/favicons/favicon.svg" color="#000000">
+    <link rel="manifest" href="manifest.json">
 
     <link rel="stylesheet" href="resources/style.css">
 
-    <!-- Platform detection and SDK loading -->
-    <script>
-    // Detect platform and load appropriate SDK
-    (function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const isVK = urlParams.has('vk_platform') || (window.VK && window.VK.init);
-        const isYandex = window.YaGames || document.querySelector('script[src*="yandex"]');
-
-        if (isVK) {
-            console.log('VK platform detected');
-            window.PLATFORM = 'vk';
-            const script = document.createElement('script');
-            script.src = 'vk/vk-sdk.js';
-            document.head.appendChild(script);
-            script.onload = function() {
-                const appScript = document.createElement('script');
-                appScript.src = 'resources/app.js';
-                document.head.appendChild(appScript);
-            };
-        } else {
-            console.log('Yandex platform detected (default)');
-            window.PLATFORM = 'yandex';
-            const sdkScript = document.createElement('script');
-            sdkScript.src = 'yandex/yandex-sdk.js';
-            document.head.appendChild(sdkScript);
-            const appScript = document.createElement('script');
-            appScript.src = 'resources/app.js';
-            document.head.appendChild(appScript);
-        }
-    })();
-    </script>
+    <!-- Yandex Games SDK -->
+    <script src="/sdk.js"></script>
+    <script type='text/javascript' src='resources/yandex-sdk.js'></script>
+    <script type='text/javascript' src='resources/app.js'></script>
 </head>
 <body>
 <script>
