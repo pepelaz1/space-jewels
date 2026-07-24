@@ -8,18 +8,12 @@ const VKSDK = {
     // Initialize VK Bridge
     async init() {
         try {
-            // Load VK Bridge script if not loaded
-            if (!window.VKBridge) {
-                const script = document.createElement('script');
-                script.src = 'https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js';
-                document.head.appendChild(script);
-                await new Promise((resolve, reject) => {
-                    script.onload = resolve;
-                    script.onerror = reject;
-                });
+            this.bridge = window.vkBridge || window.VKBridge;
+            if (!this.bridge) {
+                console.log('VK Bridge not available (local development)');
+                return false;
             }
 
-            this.bridge = window.VKBridge;
             await this.bridge.send('VKWebAppInit');
             console.log('VK Bridge initialized');
 
