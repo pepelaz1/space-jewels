@@ -16,41 +16,17 @@
 
     <link rel="stylesheet" href="resources/style.css">
 
-    <!-- Platform detection and SDK loading -->
-    <script>
-    // Detect platform and load appropriate SDK
-    (function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const isVK = urlParams.has('vk_platform') || (window.VK && window.VK.init);
-        const isYandex = window.YaGames || document.querySelector('script[src*="yandex"]');
-
-        if (isVK) {
-            console.log('VK platform detected');
-            window.PLATFORM = 'vk';
-            const script = document.createElement('script');
-            script.src = 'vk/vk-sdk.js';
-            document.head.appendChild(script);
-            script.onload = function() {
-                const appScript = document.createElement('script');
-                appScript.src = 'resources/app.js';
-                document.head.appendChild(appScript);
-            };
-        } else {
-            console.log('Yandex platform detected (default)');
-            window.PLATFORM = 'yandex';
-            const sdkScript = document.createElement('script');
-            sdkScript.src = 'yandex/yandex-sdk.js';
-            document.head.appendChild(sdkScript);
-            const appScript = document.createElement('script');
-            appScript.src = 'resources/app.js';
-            document.head.appendChild(appScript);
-        }
-    })();
-    </script>
+    <!-- VK Bridge SDK -->
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+    <script type='text/javascript' src='vk/vk-sdk.js'></script>
+    <script type='text/javascript' src='resources/app.js'></script>
 </head>
 <body>
 <script>
-// Prevent context menu on right-click (Yandex Games requirement 1.6.1.8)
+// VK Mini App platform
+window.PLATFORM = 'vk';
+
+// Prevent context menu on right-click
 document.addEventListener('contextmenu', e => e.preventDefault());
 // Prevent text selection
 document.addEventListener('selectstart', e => e.preventDefault());

@@ -4,9 +4,64 @@
 // Copyright (c) 2025 Alexander Bazhanov https://github.com/bazhanius
 // ------------------------------------------------------------------------
 
-// Language detection: use Yandex SDK if available, fallback to browser
+// Platform-agnostic SDK wrapper
+const GameSDK = {
+    init: async function() {
+        if (window.PLATFORM === 'vk' && window.VKSDK) {
+            return await VKSDK.init();
+        } else if (window.PLATFORM === 'yandex' && window.YandexSDK) {
+            return await YandexSDK.init();
+        }
+        return false;
+    },
+    showInterstitial: async function() {
+        if (window.PLATFORM === 'vk' && window.VKSDK) {
+            return await VKSDK.showInterstitial();
+        } else if (window.PLATFORM === 'yandex' && window.YandexSDK) {
+            return await YandexSDK.showInterstitial();
+        }
+    },
+    showRewarded: async function(callback) {
+        if (window.PLATFORM === 'vk' && window.VKSDK) {
+            return await VKSDK.showRewarded(callback);
+        } else if (window.PLATFORM === 'yandex' && window.YandexSDK) {
+            return await YandexSDK.showRewarded(callback);
+        }
+    },
+    saveData: async function(data) {
+        if (window.PLATFORM === 'vk' && window.VKSDK) {
+            return await VKSDK.saveData(data);
+        } else if (window.PLATFORM === 'yandex' && window.YandexSDK) {
+            return await YandexSDK.saveData(data);
+        }
+    },
+    loadData: async function() {
+        if (window.PLATFORM === 'vk' && window.VKSDK) {
+            return await VKSDK.loadData();
+        } else if (window.PLATFORM === 'yandex' && window.YandexSDK) {
+            return await YandexSDK.loadData();
+        }
+        return null;
+    },
+    startAutoSave: function(getState) {
+        if (window.PLATFORM === 'vk' && window.VKSDK) {
+            return VKSDK.startAutoSave(getState);
+        } else if (window.PLATFORM === 'yandex' && window.YandexSDK) {
+            return YandexSDK.startAutoSave(getState);
+        }
+    },
+    initVisibilityHandler: function(pauseCallback, resumeCallback) {
+        if (window.PLATFORM === 'vk' && window.VKSDK) {
+            return VKSDK.initVisibilityHandler(pauseCallback, resumeCallback);
+        } else if (window.PLATFORM === 'yandex' && window.YandexSDK) {
+            return YandexSDK.initVisibilityHandler(pauseCallback, resumeCallback);
+        }
+    }
+};
+
+// Language detection: use platform SDK if available, fallback to browser
 let userLang = 'en';
-if (window.YaGames) {
+if (window.PLATFORM === 'yandex' && window.YaGames) {
     // Will be set after SDK init
 } else {
     userLang = navigator.language.indexOf('ru') !== -1 ? 'ru' : 'en';
@@ -58,17 +113,17 @@ if (window.YaGames) {
 // The function gets called when the window is fully loaded
 window.onload = function () {
 
-    // Initialize Yandex Games SDK (non-blocking)
-    YandexSDK.init();
+    // Initialize platform SDK (non-blocking)
+    GameSDK.init();
 
     // Handle visibility change (pause on tab switch)
-    YandexSDK.initVisibilityHandler(
+    GameSDK.initVisibilityHandler(
         () => { if (typeof isPaused !== 'undefined') isPaused = true; },
         () => { if (typeof isPaused !== 'undefined') isPaused = false; }
     );
 
     // Start auto-save every 30 seconds
-    YandexSDK.startAutoSave(() => ({
+    GameSDK.startAutoSave(() => ({
         bestScore: parseInt(localStorage.getItem('Match3GameBestScore') || 0),
         gamesPlayed: parseInt(localStorage.getItem('gamesPlayed') || 0),
         totalScore: parseInt(localStorage.getItem('totalScore') || 0),
@@ -1216,8 +1271,8 @@ window.onload = function () {
         let bestScore = localStorage.getItem('Match3GameBestScore') || '—';
         bestScoreSpan.innerHTML = bestScore;
 
-        // Load from Yandex in background
-        YandexSDK.loadData().then(data => {
+        // Load from platform in background
+        GameSDK.loadData().then(data => {
             if (data?.bestScore) {
                 localStorage.setItem('Match3GameBestScore', data.bestScore);
                 bestScoreSpan.innerHTML = data.bestScore;
@@ -1269,8 +1324,8 @@ window.onload = function () {
         localStorage.setItem('gamesPlayed', gamesPlayed);
         localStorage.setItem('totalScore', totalScore);
 
-        // Save to Yandex
-        YandexSDK.saveData({
+        // Save to platform
+        GameSDK.saveData({
             bestScore: Math.max(score.current, bestScore),
             gamesPlayed: gamesPlayed,
             totalScore: totalScore,
@@ -1281,7 +1336,7 @@ window.onload = function () {
 
         // Show interstitial ad on game over (not on first game)
         if (parseInt(localStorage.getItem('gamesPlayed') || 0) > 1) {
-            YandexSDK.showInterstitial();
+            GameSDK.showInterstitial();
         }
 
         // Reset boosters button and counters
@@ -1899,7 +1954,7 @@ window.onload = function () {
 
     // Rewarded video button - get +30 seconds
     rewardedButton.addEventListener('click', async () => {
-        await YandexSDK.showRewarded(() => {
+        await GameSDK.showRewarded(() => {
             // Give extra 30 seconds
             timer.current += 30;
             updateTimer();
