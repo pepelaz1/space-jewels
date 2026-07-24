@@ -23,15 +23,15 @@ const VKSDK = {
             await this.bridge.send('VKWebAppInit');
             console.log('VK Bridge initialized');
 
-            // Get user info
+            // Get user info (optional, may fail outside VK)
             try {
                 const userInfo = await this.bridge.send('VKWebAppGetAuthToken', {
-                    app_id: 0, // Will be set by VK
+                    app_id: 0, // Will be set by VK when deployed
                     scope: 'offline'
                 });
                 this.userId = userInfo.user_id;
             } catch (e) {
-                console.log('Could not get user token:', e);
+                console.log('Could not get user token (expected outside VK):', e);
             }
 
             return true;
