@@ -65,17 +65,26 @@ document.addEventListener('selectstart', e => e.preventDefault());
 </div>
 
 <script>
+// Hide loading screen and show age modal
+function hideLoader() {
+    var loader = document.getElementById('loading-screen');
+    if (loader) loader.style.display = 'none';
+}
+
 // Show age modal on first launch
 if (!localStorage.getItem('ageConfirmed')) {
+    hideLoader();
     document.getElementById('age-modal').style.display = 'flex';
     document.getElementById('age-ok-btn').addEventListener('click', function() {
         localStorage.setItem('ageConfirmed', 'true');
         document.getElementById('age-modal').style.display = 'none';
-        document.getElementById('loading-screen').style.display = 'none';
     });
 } else {
-    document.getElementById('loading-screen').style.display = 'none';
+    hideLoader();
 }
+
+// Safety: hide loader after 3 seconds even if something goes wrong
+setTimeout(hideLoader, 3000);
 </script>
 
 <div class="stars"></div>
