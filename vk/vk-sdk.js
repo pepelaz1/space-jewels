@@ -4,6 +4,7 @@
 const VKSDK = {
     bridge: null,
     userId: null,
+    isLocal: false,
 
     // Initialize VK Bridge
     async init() {
@@ -11,33 +12,43 @@ const VKSDK = {
             this.bridge = window.vkBridge || window.VKBridge;
             if (!this.bridge) {
                 console.log('VK Bridge not available (local development)');
-                return false;
+                this.isLocal = true;
+                return true; // Allow game to run locally
             }
 
-            await this.bridge.send('VKWebAppInit');
-            console.log('VK Bridge initialized');
-
-            // Get user info (optional, may fail outside VK)
+            // Try to init VK Bridge (will fail outside VK)
             try {
-                const userInfo = await this.bridge.send('VKWebAppGetAuthToken', {
-                    app_id: 0, // Will be set by VK when deployed
-                    scope: 'offline'
-                });
-                this.userId = userInfo.user_id;
+                await this.bridge.send('VKWebAppInit');
+                console.log('VK Bridge initialized');
             } catch (e) {
-                console.log('Could not get user token (expected outside VK):', e);
+                console.log('VKWebAppInit failed (expected outside VK):', e.message);
+                this.isLocal = true;
+            }
+
+            // Get user info (only works inside VK)
+            if (!this.isLocal) {
+                try {
+                    const userInfo = await this.bridge.send('VKWebAppGetAuthToken', {
+                        app_id: 0,
+                        scope: 'offline'
+                    });
+                    this.userId = userInfo.user_id;
+                } catch (e) {
+                    console.log('Could not get user token:', e.message);
+                }
             }
 
             return true;
         } catch (e) {
-            console.log('VK Bridge init error:', e);
-            return false;
+            console.log('VK SDK init error:', e);
+            this.isLocal = true;
+            return true; // Allow game to run locally
         }
     },
 
     // Show interstitial ad (between games, on game over)
     async showInterstitial() {
-        if (!this.bridge) return;
+        if (this.isLocal || !this.bridge) return;
         try {
             await this.bridge.send('VKWebAppShowNativeAds', {
                 ad_format: 'interstitial'
@@ -50,7 +61,7 @@ const VKSDK = {
 
     // Show rewarded video ad (for boosters, extra time, etc.)
     async showRewarded(callback) {
-        if (!this.bridge) {
+        if (this.isLocal || !this.bridge) {
             // Local dev: just give reward
             if (callback) callback();
             return;
@@ -70,7 +81,7 @@ const VKSDK = {
 
     // Save player data
     async saveData(data) {
-        if (!this.bridge) {
+        if (this.isLocal || !this.bridge) {
             // Local fallback
             localStorage.setItem('cosmicGemsData', JSON.stringify(data));
             return;
@@ -83,14 +94,13 @@ const VKSDK = {
             console.log('Data saved to VK');
         } catch (e) {
             console.log('Save error:', e);
-            // Fallback to localStorage
             localStorage.setItem('cosmicGemsData', JSON.stringify(data));
         }
     },
 
     // Load player data
     async loadData() {
-        if (!this.bridge) {
+        if (this.isLocal || !this.bridge) {
             // Local fallback
             const data = localStorage.getItem('cosmicGemsData');
             return data ? JSON.parse(data) : null;
