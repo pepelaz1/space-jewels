@@ -79,14 +79,10 @@ if (typeof vkBridge !== 'undefined') {
             var body = document.body;
             html.style.overflow = 'hidden';
             html.style.height = '100%';
-            body.style.overflow = 'auto';
-            body.style.height = window.innerHeight + 'px';
-            // Hide scrollbar but allow scrolling
-            body.style.scrollbarWidth = 'none';        // Firefox
-            body.style.msOverflowStyle = 'none';        // IE
-            var style = document.createElement('style');
-            style.textContent = 'body::-webkit-scrollbar{display:none}';
-            document.head.appendChild(style);
+            var zoom = 0.95;
+            body.style.overflow = 'hidden';
+            body.style.height = (window.innerHeight / zoom) + 'px';
+            body.style.zoom = zoom;
         })
         .catch(function(e) { console.warn('VKWebAppInit:', e.message); hideLoader(); });
 } else {
