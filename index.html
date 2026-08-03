@@ -64,6 +64,18 @@
     } else if (insideVK) {
         // Inside VK — platform will inject its bridge. NEVER load CDN copy!
         console.log('Inside VK, waiting for platform bridge...');
+
+        // Send VKWebAppInit via postMessage NOW (bypasses bridge entirely)
+        function _sendInit() {
+            try {
+                window.parent.postMessage(JSON.stringify({handler:'VKWebAppInit',params:{}}), '*');
+                window.parent.postMessage(JSON.stringify({type:'VKWebAppInit',data:{}}), '*');
+                console.log('Sent VKWebAppInit via postMessage (bypass)');
+            } catch(e) { console.error('postMessage err:', e.message); }
+        }
+        _sendInit();
+        setTimeout(_sendInit, 300);
+        setTimeout(_sendInit, 1000);
     } else {
         // Outside VK (local dev) — load bridge from CDN for testing
         console.log('Local dev: loading VK Bridge from CDN');
