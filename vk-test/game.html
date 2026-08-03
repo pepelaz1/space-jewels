@@ -116,6 +116,9 @@ if (typeof vkBridge !== 'undefined') {
             if (app) {
                 app.style.maxHeight = window.innerHeight + 'px';
                 app.style.overflow = 'hidden';
+                app.style.paddingTop = '8px';
+                app.style.paddingBottom = '8px';
+                app.style.boxSizing = 'border-box';
             }
         })
         .catch(function(e) { console.warn('VKWebAppInit:', e.message); hideLoader(); });
