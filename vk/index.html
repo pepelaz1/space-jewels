@@ -54,37 +54,8 @@
     });
     </script>
 
-    <!-- VK Bridge SDK -->
-    <script>
-    // Detect if we're inside VK Mini App iframe (platform injects its own bridge)
-    var insideVK = !!(window.location.search.includes('vk_platform') || (window.parent && window.parent !== window));
-
-    if (window.vkBridge || window.VKBridge) {
-        console.log('VK Bridge provided by platform');
-    } else if (insideVK) {
-        // Inside VK — platform will inject its bridge. NEVER load CDN copy!
-        console.log('Inside VK, waiting for platform bridge...');
-
-        // Send VKWebAppInit via postMessage NOW (bypasses bridge entirely)
-        function _sendInit() {
-            try {
-                window.parent.postMessage(JSON.stringify({handler:'VKWebAppInit',params:{}}), '*');
-                window.parent.postMessage(JSON.stringify({type:'VKWebAppInit',data:{}}), '*');
-                console.log('Sent VKWebAppInit via postMessage (bypass)');
-            } catch(e) { console.error('postMessage err:', e.message); }
-        }
-        _sendInit();
-        setTimeout(_sendInit, 300);
-        setTimeout(_sendInit, 1000);
-    } else {
-        // Outside VK (local dev) — load bridge from CDN for testing
-        console.log('Local dev: loading VK Bridge from CDN');
-        var s = document.createElement('script');
-        s.src = 'https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js';
-        s.onerror = function() { console.log('VK Bridge CDN failed to load'); };
-        document.head.appendChild(s);
-    }
-    </script>
+    <!-- VK Bridge SDK — loaded synchronously, always available -->
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     <script type='text/javascript' src='resources/vk-sdk.js'></script>
     <script type='text/javascript' src='resources/app.js'></script>
 </head>
