@@ -99,10 +99,19 @@ function hideLoader() {
 }
 setTimeout(hideLoader, 5000);
 
-// Initialize VK Bridge (like the official template)
+// Initialize VK Bridge
 if (typeof vkBridge !== 'undefined') {
     vkBridge.send('VKWebAppInit')
-        .then(function(r) { console.log('VKWebAppInit OK:', r); hideLoader(); })
+        .then(function(r) {
+            console.log('VKWebAppInit OK:', r);
+            hideLoader();
+            // Fit perfectly in VK iframe — no scrolling
+            document.body.style.overflow = 'hidden';
+            document.documentElement.style.overflow = 'hidden';
+            if (r && r.data && r.data.max_height) {
+                document.body.style.height = r.data.max_height + 'px';
+            }
+        })
         .catch(function(e) { console.warn('VKWebAppInit:', e.message); hideLoader(); });
 } else {
     hideLoader();
