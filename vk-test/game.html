@@ -112,8 +112,10 @@ if (typeof vkBridge !== 'undefined') {
             body.style.overflow = 'hidden';
             body.style.height = window.innerHeight + 'px';
             body.style.maxHeight = window.innerHeight + 'px';
-            body.style.padding = '10px 0';
+            body.style.padding = '12px 0';
             body.style.boxSizing = 'border-box';
+            body.style.borderTop = '12px solid #0a0020';
+            body.style.borderBottom = '12px solid #0a0020';
             var app = document.querySelector('.app');
             if (app) {
                 app.style.maxHeight = '100%';
