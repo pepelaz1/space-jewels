@@ -105,21 +105,18 @@ if (typeof vkBridge !== 'undefined') {
         .then(function(r) {
             console.log('VKWebAppInit OK:', r);
             hideLoader();
-            // Scale game to fit VK iframe height without cutting bottom
             var html = document.documentElement;
             var body = document.body;
             html.style.overflow = 'hidden';
             html.style.height = '100%';
             body.style.overflow = 'hidden';
-            body.style.margin = '0';
-            body.style.padding = '0';
-            var gameHeight = 850;
-            var available = window.innerHeight;
-            var scale = Math.min(1, available / gameHeight);
-            body.style.transform = 'scale(' + scale + ')';
-            body.style.transformOrigin = 'top center';
-            body.style.width = '100%';
-            body.style.height = (available / scale) + 'px';
+            body.style.height = window.innerHeight + 'px';
+            body.style.maxHeight = window.innerHeight + 'px';
+            var app = document.querySelector('.app');
+            if (app) {
+                app.style.maxHeight = window.innerHeight + 'px';
+                app.style.overflow = 'hidden';
+            }
         })
         .catch(function(e) { console.warn('VKWebAppInit:', e.message); hideLoader(); });
 } else {
