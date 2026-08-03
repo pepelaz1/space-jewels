@@ -38,9 +38,24 @@ const VKSDK = {
 
             this.bridge = window.vkBridge || window.VKBridge;
             if (!this.bridge) {
-                console.log('VK Bridge not available (local development)');
+                // Still no bridge — try direct postMessage if inside VK iframe
+                var insideVK = window.parent && window.parent !== window;
+                if (insideVK) {
+                    console.log('VK Bridge not found, trying direct postMessage to platform...');
+                    try {
+                        window.parent.postMessage(JSON.stringify({
+                            handler: 'VKWebAppInit',
+                            params: {}
+                        }), '*');
+                        console.log('Sent VKWebAppInit via postMessage');
+                    } catch (e) {
+                        console.log('postMessage fallback failed:', e.message);
+                    }
+                } else {
+                    console.log('VK Bridge not available (local development)');
+                }
                 this.isLocal = true;
-                return true; // Allow game to run locally
+                return true;
             }
 
             // Initialize VK Bridge — signals platform that app is ready
