@@ -16,46 +16,15 @@
 
     <link rel="stylesheet" href="resources/style.css">
 
-    <!-- DEBUG: captures all console.log to on-screen panel -->
+    <!-- DEBUG PANEL (commented out, uncomment to debug in VK iframe) -->
+    <!--
     <script>
-    window._debugLogs = [];
-    var _orig = { log: console.log, error: console.error, warn: console.warn };
-    function _capture(level, args) {
-        var msg = Array.from(args).map(function(a) {
-            try { return typeof a === 'object' ? JSON.stringify(a) : String(a); } catch(e) { return String(a); }
-        }).join(' ');
-        window._debugLogs.push({ t: Date.now(), l: level, m: msg });
-        if (window._debugLogs.length > 50) window._debugLogs.shift();
-        var panel = document.getElementById('_debug');
-        if (panel) {
-            panel.innerHTML = window._debugLogs.map(function(e) {
-                var c = e.l === 'error' ? '#f44' : e.l === 'warn' ? '#fa0' : '#0f0';
-                return '<span style="color:'+c+'">['+e.l+']</span> '+e.m;
-            }).join('<br>');
-            panel.scrollTop = panel.scrollHeight;
-        }
-        _orig[level].apply(console, args);
-    }
-    console.log = function() { _capture('log', arguments); };
-    console.error = function() { _capture('error', arguments); };
-    console.warn = function() { _capture('warn', arguments); };
-    document.addEventListener('DOMContentLoaded', function() {
-        var d = document.createElement('div');
-        d.id = '_debug';
-        d.style.cssText = 'position:fixed;bottom:0;left:0;right:0;max-height:30vh;overflow-y:auto;background:rgba(0,0,0,0.92);color:#0f0;font:10px monospace;padding:6px;z-index:99999;pointer-events:auto;border-top:1px solid #333;';
-        document.body.appendChild(d);
-        // replay stored logs
-        if (window._debugLogs.length) {
-            d.innerHTML = window._debugLogs.map(function(e) {
-                var c = e.l === 'error' ? '#f44' : e.l === 'warn' ? '#fa0' : '#0f0';
-                return '<span style="color:'+c+'">['+e.l+']</span> '+e.m;
-            }).join('<br>');
-        }
-    });
+    window._debugLogs = []; ... see vk-test/game.html for full debug code ...
     </script>
+    -->
 
-    <!-- VK Bridge SDK — bundled locally, no CDN dependency -->
-    <script src="resources/vk-bridge.js"></script>
+    <!-- VK Bridge SDK -->
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
     <script type='text/javascript' src='resources/vk-sdk.js'></script>
     <script type='text/javascript' src='resources/app.js'></script>
 </head>
@@ -93,55 +62,29 @@ document.addEventListener('selectstart', e => e.preventDefault());
 </div>
 
 <script>
-// Safe localStorage wrapper (handles SecurityError in cross-origin iframes like VK)
-var safeStorage = {
-    _available: null,
-    isAvailable: function() {
-        if (this._available !== null) return this._available;
-        try {
-            var key = '__vksafe__';
-            localStorage.setItem(key, '1');
-            localStorage.removeItem(key);
-            this._available = true;
-        } catch (e) {
-            this._available = false;
-            console.log('localStorage not available (iframe sandbox):', e.message);
-        }
-        return this._available;
-    },
-    getItem: function(key) {
-        if (!this.isAvailable()) return null;
-        try { return localStorage.getItem(key); } catch (e) { return null; }
-    },
-    setItem: function(key, value) {
-        if (!this.isAvailable()) return;
-        try { localStorage.setItem(key, value); } catch (e) {}
-    }
-};
-
-// Safety: hide loader after 3 seconds even if something goes wrong
-setTimeout(function() {
-    var loader = document.getElementById('loading-screen');
-    if (loader) loader.style.display = 'none';
-}, 3000);
-
-// Hide loading screen and show age modal
 function hideLoader() {
     var loader = document.getElementById('loading-screen');
     if (loader) loader.style.display = 'none';
 }
+setTimeout(hideLoader, 5000);
 
-// Show age modal on first launch
-if (!safeStorage.getItem('ageConfirmed')) {
-    hideLoader();
-    var ageModal = document.getElementById('age-modal');
-    if (ageModal) {
-        ageModal.style.display = 'flex';
-        document.getElementById('age-ok-btn').addEventListener('click', function() {
-            safeStorage.setItem('ageConfirmed', 'true');
-            ageModal.style.display = 'none';
-        });
-    }
+// Initialize VK Bridge
+if (typeof vkBridge !== 'undefined') {
+    vkBridge.send('VKWebAppInit')
+        .then(function(r) {
+            console.log('VKWebAppInit OK:', r);
+            hideLoader();
+            // Fit game height to VK iframe without transforms (keep canvas sharp)
+            var html = document.documentElement;
+            var body = document.body;
+            html.style.overflow = 'hidden';
+            html.style.height = '100%';
+            var zoom = 0.95;
+            body.style.overflow = 'hidden';
+            body.style.height = (window.innerHeight / zoom) + 'px';
+            body.style.zoom = zoom;
+        })
+        .catch(function(e) { console.warn('VKWebAppInit:', e.message); hideLoader(); });
 } else {
     hideLoader();
 }
