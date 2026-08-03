@@ -65,6 +65,38 @@ document.addEventListener('selectstart', e => e.preventDefault());
 </div>
 
 <script>
+// Safe localStorage wrapper (handles SecurityError in cross-origin iframes like VK)
+var safeStorage = {
+    _available: null,
+    isAvailable: function() {
+        if (this._available !== null) return this._available;
+        try {
+            var key = '__vksafe__';
+            localStorage.setItem(key, '1');
+            localStorage.removeItem(key);
+            this._available = true;
+        } catch (e) {
+            this._available = false;
+            console.log('localStorage not available (iframe sandbox):', e.message);
+        }
+        return this._available;
+    },
+    getItem: function(key) {
+        if (!this.isAvailable()) return null;
+        try { return localStorage.getItem(key); } catch (e) { return null; }
+    },
+    setItem: function(key, value) {
+        if (!this.isAvailable()) return;
+        try { localStorage.setItem(key, value); } catch (e) {}
+    }
+};
+
+// Safety: hide loader after 3 seconds even if something goes wrong
+setTimeout(function() {
+    var loader = document.getElementById('loading-screen');
+    if (loader) loader.style.display = 'none';
+}, 3000);
+
 // Hide loading screen and show age modal
 function hideLoader() {
     var loader = document.getElementById('loading-screen');
@@ -72,19 +104,19 @@ function hideLoader() {
 }
 
 // Show age modal on first launch
-if (!localStorage.getItem('ageConfirmed')) {
+if (!safeStorage.getItem('ageConfirmed')) {
     hideLoader();
-    document.getElementById('age-modal').style.display = 'flex';
-    document.getElementById('age-ok-btn').addEventListener('click', function() {
-        localStorage.setItem('ageConfirmed', 'true');
-        document.getElementById('age-modal').style.display = 'none';
-    });
+    var ageModal = document.getElementById('age-modal');
+    if (ageModal) {
+        ageModal.style.display = 'flex';
+        document.getElementById('age-ok-btn').addEventListener('click', function() {
+            safeStorage.setItem('ageConfirmed', 'true');
+            ageModal.style.display = 'none';
+        });
+    }
 } else {
     hideLoader();
 }
-
-// Safety: hide loader after 3 seconds even if something goes wrong
-setTimeout(hideLoader, 3000);
 </script>
 
 <div class="stars"></div>
