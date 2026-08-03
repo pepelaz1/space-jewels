@@ -112,9 +112,11 @@ if (typeof vkBridge !== 'undefined') {
             body.style.overflow = 'hidden';
             body.style.height = window.innerHeight + 'px';
             body.style.maxHeight = window.innerHeight + 'px';
+            body.style.padding = '10px 0';
+            body.style.boxSizing = 'border-box';
             var app = document.querySelector('.app');
             if (app) {
-                app.style.maxHeight = window.innerHeight + 'px';
+                app.style.maxHeight = '100%';
                 app.style.overflow = 'hidden';
             }
         })
