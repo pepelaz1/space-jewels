@@ -81,7 +81,14 @@ if (typeof vkBridge !== 'undefined') {
             html.style.height = '100%';
             body.style.overflow = 'hidden';
             body.style.height = window.innerHeight + 'px';
-            body.style.maxHeight = window.innerHeight + 'px';
+            // Scale .app to fit viewport without clipping
+            var app = document.querySelector('.app');
+            if (app) {
+                var h = app.scrollHeight;
+                if (h > window.innerHeight) {
+                    app.style.zoom = (window.innerHeight / h).toFixed(3);
+                }
+            }
         })
         .catch(function(e) { console.warn('VKWebAppInit:', e.message); hideLoader(); });
 } else {
