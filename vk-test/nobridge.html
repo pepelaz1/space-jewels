@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VK Test — No Bridge</title>
+<style>
+body { font-family: Arial; margin: 20px; background: #111; color: #0f0; }
+</style>
+</head>
+<body>
+<h1 style="color:#0f0;">✅ PAGE LOADED OK</h1>
+<p>This page has no VK Bridge. It just confirms that GitHub Pages works inside VK's iframe.</p>
+<p id="inside"></p>
+<script>
+document.getElementById('inside').textContent =
+    (window.parent !== window) ? '📍 Running inside iframe (VK)' : '📍 Direct access (not VK)';
+</script>
+</body>
+</html>
