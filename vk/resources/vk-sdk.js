@@ -28,19 +28,42 @@ const VKSDK = {
     // Initialize VK Bridge
     async init() {
         try {
-            this.bridge = window.vkBridge || window.VKBridge;
-            if (!this.bridge) {
-                console.log('VK Bridge not available (local development)');
-                this.isLocal = true;
-                return true; // Allow game to run locally
+            // VK may inject its bridge asynchronously — wait up to 5s for it
+            if (!window.vkBridge && !window.VKBridge) {
+                for (let i = 0; i < 50; i++) {
+                    if (window.vkBridge || window.VKBridge) break;
+                    await new Promise(function(r) { setTimeout(r, 100); });
+                }
             }
 
-            // Try to init VK Bridge (will fail outside VK)
+            this.bridge = window.vkBridge || window.VKBridge;
+            if (!this.bridge) {
+                // Still no bridge — try direct postMessage if inside VK iframe
+                var insideVK = window.parent && window.parent !== window;
+                if (insideVK) {
+                    console.log('VK Bridge not found, trying direct postMessage to platform...');
+                    try {
+                        window.parent.postMessage(JSON.stringify({
+                            handler: 'VKWebAppInit',
+                            params: {}
+                        }), '*');
+                        console.log('Sent VKWebAppInit via postMessage');
+                    } catch (e) {
+                        console.log('postMessage fallback failed:', e.message);
+                    }
+                } else {
+                    console.log('VK Bridge not available (local development)');
+                }
+                this.isLocal = true;
+                return true;
+            }
+
+            // Initialize VK Bridge — signals platform that app is ready
             try {
                 await this.bridge.send('VKWebAppInit');
-                console.log('VK Bridge initialized');
+                console.log('VK Bridge initialized successfully');
             } catch (e) {
-                console.log('VKWebAppInit failed (expected outside VK):', e.message);
+                console.log('VKWebAppInit failed:', e.message);
                 this.isLocal = true;
             }
 
