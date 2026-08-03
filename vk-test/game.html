@@ -105,12 +105,22 @@ if (typeof vkBridge !== 'undefined') {
         .then(function(r) {
             console.log('VKWebAppInit OK:', r);
             hideLoader();
-            // Fit perfectly in VK iframe — no scrolling
-            document.body.style.overflow = 'hidden';
-            document.documentElement.style.overflow = 'hidden';
-            if (r && r.data && r.data.max_height) {
-                document.body.style.height = r.data.max_height + 'px';
-            }
+            // Lock body to prevent any scrolling
+            var html = document.documentElement;
+            var body = document.body;
+            html.style.overflow = 'hidden';
+            html.style.height = '100%';
+            html.style.margin = '0';
+            html.style.padding = '0';
+            body.style.overflow = 'hidden';
+            body.style.height = window.innerHeight + 'px';
+            body.style.maxHeight = window.innerHeight + 'px';
+            body.style.margin = '0';
+            body.style.padding = '0';
+            body.style.position = 'fixed';
+            body.style.top = '0';
+            body.style.left = '0';
+            body.style.right = '0';
         })
         .catch(function(e) { console.warn('VKWebAppInit:', e.message); hideLoader(); });
 } else {
