@@ -79,9 +79,14 @@ if (typeof vkBridge !== 'undefined') {
             var body = document.body;
             html.style.overflow = 'hidden';
             html.style.height = '100%';
-            body.style.overflow = 'hidden';
+            body.style.overflow = 'auto';
             body.style.height = window.innerHeight + 'px';
-            body.style.zoom = '0.95';
+            // Hide scrollbar but allow scrolling
+            body.style.scrollbarWidth = 'none';        // Firefox
+            body.style.msOverflowStyle = 'none';        // IE
+            var style = document.createElement('style');
+            style.textContent = 'body::-webkit-scrollbar{display:none}';
+            document.head.appendChild(style);
         })
         .catch(function(e) { console.warn('VKWebAppInit:', e.message); hideLoader(); });
 } else {
