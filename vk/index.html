@@ -16,13 +16,16 @@
 
     <link rel="stylesheet" href="resources/style.css">
 
-    <!-- VK Bridge SDK (only loads inside VK) -->
+    <!-- VK Bridge SDK -->
     <script>
-    // Only load VK Bridge if inside VK environment
-    if (window.location.search.includes('vk_platform') || (window.parent && window.parent !== window)) {
+    // VK provides its own bridge inside Mini Apps — never override it
+    if (window.vkBridge || window.VKBridge) {
+        console.log('VK Bridge provided by platform');
+    } else if (window.location.search.includes('vk_platform') || (window.parent && window.parent !== window)) {
+        // Bridge not available yet — load from CDN (local testing / fallback)
         var s = document.createElement('script');
         s.src = 'https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js';
-        s.onerror = function() { console.log('VK Bridge failed to load'); };
+        s.onerror = function() { console.log('VK Bridge CDN failed to load'); };
         document.head.appendChild(s);
     } else {
         console.log('Running outside VK (local development)');
