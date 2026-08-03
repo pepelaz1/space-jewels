@@ -28,6 +28,14 @@ const VKSDK = {
     // Initialize VK Bridge
     async init() {
         try {
+            // VK may inject its bridge asynchronously — wait up to 5s for it
+            if (!window.vkBridge && !window.VKBridge) {
+                for (let i = 0; i < 50; i++) {
+                    if (window.vkBridge || window.VKBridge) break;
+                    await new Promise(function(r) { setTimeout(r, 100); });
+                }
+            }
+
             this.bridge = window.vkBridge || window.VKBridge;
             if (!this.bridge) {
                 console.log('VK Bridge not available (local development)');
@@ -35,12 +43,12 @@ const VKSDK = {
                 return true; // Allow game to run locally
             }
 
-            // Try to init VK Bridge (will fail outside VK)
+            // Initialize VK Bridge — signals platform that app is ready
             try {
                 await this.bridge.send('VKWebAppInit');
-                console.log('VK Bridge initialized');
+                console.log('VK Bridge initialized successfully');
             } catch (e) {
-                console.log('VKWebAppInit failed (expected outside VK):', e.message);
+                console.log('VKWebAppInit failed:', e.message);
                 this.isLocal = true;
             }
 
