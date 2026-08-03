@@ -82,19 +82,6 @@ if (typeof vkBridge !== 'undefined') {
             body.style.overflow = 'hidden';
             body.style.height = window.innerHeight + 'px';
             body.style.maxHeight = window.innerHeight + 'px';
-            // .app with auto margins — body background shows as gaps
-            var gap = 16;
-            var app = document.querySelector('.app');
-            if (app) {
-                app.style.margin = gap + 'px auto 0 auto';
-                app.style.maxHeight = (window.innerHeight - gap) + 'px';
-                app.style.overflow = 'hidden';
-                // If content overflows, scale it down
-                if (app.scrollHeight > app.clientHeight) {
-                    var s = app.clientHeight / app.scrollHeight;
-                    app.style.zoom = s;
-                }
-            }
         })
         .catch(function(e) { console.warn('VKWebAppInit:', e.message); hideLoader(); });
 } else {
