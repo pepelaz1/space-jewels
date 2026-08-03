@@ -112,14 +112,15 @@ if (typeof vkBridge !== 'undefined') {
             body.style.overflow = 'hidden';
             body.style.height = window.innerHeight + 'px';
             body.style.maxHeight = window.innerHeight + 'px';
-            body.style.padding = '12px 0';
-            body.style.boxSizing = 'border-box';
-            body.style.borderTop = '12px solid #0a0020';
-            body.style.borderBottom = '12px solid #0a0020';
+            var gap = 16;
             var app = document.querySelector('.app');
             if (app) {
-                app.style.maxHeight = '100%';
+                app.style.margin = gap + 'px auto 0 auto';
+                app.style.maxHeight = (window.innerHeight - gap) + 'px';
                 app.style.overflow = 'hidden';
+                if (app.scrollHeight > app.clientHeight) {
+                    app.style.zoom = app.clientHeight / app.scrollHeight;
+                }
             }
         })
         .catch(function(e) { console.warn('VKWebAppInit:', e.message); hideLoader(); });
