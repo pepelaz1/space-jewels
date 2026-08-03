@@ -1,6 +1,25 @@
 // VK Bridge SDK Integration
 // Handles: initialization, ads, player data saving
 
+// Safe localStorage fallback (handles SecurityError in cross-origin iframes like VK Mini Apps)
+(function() {
+    try {
+        var testKey = '__ls_test__';
+        localStorage.setItem(testKey, '1');
+        localStorage.removeItem(testKey);
+    } catch (e) {
+        // localStorage is blocked (e.g. third-party iframe), provide in-memory fallback
+        var _fallback = {};
+        var _ls = {
+            getItem: function(k) { return _fallback.hasOwnProperty(k) ? _fallback[k] : null; },
+            setItem: function(k, v) { _fallback[k] = String(v); },
+            removeItem: function(k) { delete _fallback[k]; }
+        };
+        try { Object.defineProperty(window, 'localStorage', { value: _ls, writable: true, configurable: true }); } catch (_) {}
+        console.log('localStorage blocked, using in-memory fallback');
+    }
+})();
+
 const VKSDK = {
     bridge: null,
     userId: null,
