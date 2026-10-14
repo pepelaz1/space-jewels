@@ -24,11 +24,3 @@ Read more about game on [wikipedia](https://en.wikipedia.org/wiki/Tile-matching_
 #### Inspiration
 - Based on [Match-3-Game-HTML5](https://github.com/rembound/Match-3-Game-HTML5)
 - Icons from [Material Icons](https://fonts.google.com/icons)
-
-<!-- portfolio-visual:start -->
-## Схема работы
-
-![HTML5-игра Match-3](docs/portfolio/diagram.png)
-
-Схема подготовлена по README и исходному коду. Запуск приложения не проверялся. README ссылается на исходную игру [bazhanius/match-3-game](https://github.com/bazhanius/match-3-game).
-<!-- portfolio-visual:end -->
